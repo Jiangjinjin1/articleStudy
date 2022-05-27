@@ -12,13 +12,20 @@ class Compiler {
   run() {
     const info = this.build(this.entry);
     this.modules.push(info);
-    this.modules.forEach(({ dependecies }) => {
-      if (dependecies) {
-        for (const dependency in dependecies) {
-          this.modules.push(this.build(dependecies[dependency]));
+
+    const findDependecies = (dependecies) => {
+      for (const dependency in dependecies) {
+        const buildInfo = this.build(dependecies[dependency])
+        this.modules.push(buildInfo)
+        if (JSON.stringify(buildInfo.dependecies) !== '{}') {
+          findDependecies(buildInfo.dependecies);
         }
       }
-    });
+    }
+
+    findDependecies(info.dependecies);
+
+    console.log('this.modules:', this.modules)
     const dependencyGraph = this.modules.reduce(
       (graph, item) => ({
         ...graph,
